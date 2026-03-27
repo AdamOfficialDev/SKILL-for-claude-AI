@@ -1,0 +1,875 @@
+[
+  {
+    "id": "eval_001",
+    "category": "bug_debug",
+    "language": "EN",
+    "prompt": "My React component keeps throwing 'Cannot read properties of undefined (reading map)' on render. Here's the code:\n\n```jsx\nfunction UserList({ users }) {\n  return (\n    <ul>\n      {users.map(u => <li key={u.id}>{u.name}</li>)}\n    </ul>\n  );\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "B"
+    ],
+    "notes": "Classic runtime error with code — must trigger DAVID for DEBUG mode"
+  },
+  {
+    "id": "eval_002",
+    "category": "bug_debug",
+    "language": "ID",
+    "prompt": "David, ada error di API saya:\n\nTypeError: Cannot set headers after they are sent to the client\n\nIni kodenya:\n```js\napp.get('/user/:id', async (req, res) => {\n  const user = await db.findById(req.params.id);\n  if (!user) res.status(404).json({ error: 'not found' });\n  res.json(user);\n});\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "B",
+      "R"
+    ],
+    "notes": "Bahasa Indonesia bug report — missing return after 404 response, classic double-send"
+  },
+  {
+    "id": "eval_003",
+    "category": "security_audit",
+    "language": "EN",
+    "prompt": "Please do a security audit of my authentication endpoint:\n\n```python\n@app.route('/login', methods=['POST'])\ndef login():\n    username = request.form['username']\n    password = request.form['password']\n    query = f\"SELECT * FROM users WHERE username='{username}' AND password='{password}'\"\n    user = db.execute(query).fetchone()\n    if user:\n        session['user_id'] = user['id']\n        return redirect('/')\n    return 'Invalid credentials', 401\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "B",
+      "AC"
+    ],
+    "notes": "SQL injection + plain-text password storage — must trigger SECURITY scanner"
+  },
+  {
+    "id": "eval_004",
+    "category": "full_scan",
+    "language": "EN",
+    "prompt": "Can you review this TypeScript service file?\n\n```ts\nimport { Injectable } from '@nestjs/common';\nimport { InjectRepository } from '@nestjs/typeorm';\nimport { Repository } from 'typeorm';\nimport { User } from './user.entity';\n\n@Injectable()\nexport class UserService {\n  constructor(@InjectRepository(User) private repo: Repository<User>) {}\n\n  async getAll() {\n    return this.repo.find();\n  }\n\n  async getById(id: any) {\n    return this.repo.findOne(id);\n  }\n\n  async create(data: any) {\n    const user = this.repo.create(data);\n    return this.repo.save(user);\n  }\n\n  async delete(id: any) {\n    return this.repo.delete(id);\n  }\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "B",
+      "D",
+      "P",
+      "C"
+    ],
+    "notes": "No specific complaint = FULL SCAN. TypeScript with `any` types, no input validation, missing error handling"
+  },
+  {
+    "id": "eval_005",
+    "category": "performance",
+    "language": "EN",
+    "prompt": "My API is really slow — response time went from 200ms to 4 seconds after we added more users. Here's the query function:\n\n```python\ndef get_user_posts_with_comments(user_ids):\n    result = []\n    for user_id in user_ids:\n        user = db.query(User).filter(User.id == user_id).first()\n        posts = db.query(Post).filter(Post.user_id == user_id).all()\n        for post in posts:\n            comments = db.query(Comment).filter(Comment.post_id == post.id).all()\n            result.append({'user': user, 'posts': posts, 'comments': comments})\n    return result\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "C",
+      "B",
+      "A"
+    ],
+    "notes": "Classic N+1 query in a loop — PERF scanner must detect"
+  },
+  {
+    "id": "eval_006",
+    "category": "uiux_audit",
+    "language": "ID",
+    "prompt": "David, tolong audit UI/UX form login saya ini:\n\n```jsx\nexport function LoginForm() {\n  const [email, setEmail] = useState('');\n  const [pass, setPass] = useState('');\n  const [loading, setLoading] = useState(false);\n\n  const handleSubmit = async () => {\n    setLoading(true);\n    await login(email, pass);\n    setLoading(false);\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <input type=\"text\" onChange={e => setEmail(e.target.value)} />\n      <input type=\"text\" onChange={e => setPass(e.target.value)} />\n      <button>Login</button>\n      {loading && <span>Loading...</span>}\n    </form>\n  );\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "O",
+      "F",
+      "B",
+      "A"
+    ],
+    "notes": "ID language UX audit — missing labels, wrong input type for password, no error state, accessibility issues"
+  },
+  {
+    "id": "eval_007",
+    "category": "code_review_pr",
+    "language": "EN",
+    "prompt": "Can you review this PR diff before I merge it?\n\n```diff\n--- a/src/api/payment.ts\n+++ b/src/api/payment.ts\n@@ -12,8 +12,12 @@ export async function processPayment(amount: number, userId: string) {\n-  const result = await stripe.charges.create({ amount, currency: 'usd' });\n+  const result = await stripe.charges.create({\n+    amount,\n+    currency: 'usd',\n+    metadata: { userId, email: user.email, name: user.name }\n+  });\n   return result;\n }\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "I",
+      "B",
+      "AE",
+      "D"
+    ],
+    "notes": "Git diff review — PII in payment metadata, GDPR concern with passing email/name to third party"
+  },
+  {
+    "id": "eval_008",
+    "category": "test_quality",
+    "language": "EN",
+    "prompt": "Please audit my test file for quality issues:\n\n```ts\ndescribe('UserService', () => {\n  it('should work', async () => {\n    const result = await userService.create({ name: 'test', email: 'test@test.com' });\n    expect(result).toBeTruthy();\n  });\n\n  it('should get user', async () => {\n    const user = await userService.getById(1);\n    expect(user).not.toBeNull();\n  });\n\n  it('should delete', async () => {\n    await userService.delete(1);\n    // TODO: assert something\n  });\n});\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "TQ",
+      "B",
+      "A"
+    ],
+    "notes": "Weak assertions (toBeTruthy), missing edge cases, empty test body — TQ scanner must activate"
+  },
+  {
+    "id": "eval_009",
+    "category": "typescript_types",
+    "language": "EN",
+    "prompt": "Check my TypeScript for type issues:\n\n```ts\nconst fetchUser = async (id): Promise<any> => {\n  const res = await fetch(`/api/users/${id}`);\n  const data = await res.json() as any;\n  return data!.user;\n};\n\nconst updateProfile = (user: any, updates: any) => {\n  return { ...user, ...updates };\n};\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "P",
+      "B",
+      "A"
+    ],
+    "notes": "TypeScript with rampant `any`, non-null assertions, untyped params — TYPES scanner must detect"
+  },
+  {
+    "id": "eval_010",
+    "category": "gdpr_privacy",
+    "language": "EN",
+    "prompt": "I need a privacy/GDPR audit of this user data handling code:\n\n```python\ndef get_analytics_payload(user):\n    return {\n        'user_id': user.id,\n        'email': user.email,\n        'full_name': user.name,\n        'phone': user.phone,\n        'ip_address': request.remote_addr,\n        'page': request.path,\n        'timestamp': datetime.now().isoformat()\n    }\n\ndef track_event(event_name, user):\n    payload = get_analytics_payload(user)\n    requests.post('https://analytics.thirdparty.com/track', json=payload)\n    logger.info(f'Event tracked: {event_name} for {user.email}')\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AE",
+      "B",
+      "U"
+    ],
+    "notes": "PII in analytics payload + PII in logs — GDPR scanner must fire"
+  },
+  {
+    "id": "eval_011",
+    "category": "resilience",
+    "language": "ID",
+    "prompt": "David, cek pattern resilience code saya ini — apa yang kurang?\n\n```ts\nasync function callPaymentGateway(order: Order) {\n  const response = await fetch('https://payment.api.com/charge', {\n    method: 'POST',\n    body: JSON.stringify(order)\n  });\n  return response.json();\n}\n\nasync function processOrder(orderId: string) {\n  const order = await db.orders.findById(orderId);\n  await callPaymentGateway(order);\n  await db.orders.update(orderId, { status: 'paid' });\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AF",
+      "B",
+      "A",
+      "R"
+    ],
+    "notes": "ID language — no timeout, no retry, no circuit breaker, non-idempotent charge — RESILIENCE scanner"
+  },
+  {
+    "id": "eval_012",
+    "category": "tech_debt",
+    "language": "EN",
+    "prompt": "Can you generate a tech debt heatmap for this file?\n\n```js\n// TODO: refactor this entire module (added 2021)\n// FIXME: this breaks with large datasets\n// HACK: temporary workaround for issue #234\nconst FEATURE_FLAG_NEW_UI = true; // TODO: remove after migration\n\nfunction processData(data) {\n  // DEPRECATED: use processDataV2 instead\n  if (FEATURE_FLAG_NEW_UI) {\n    // TODO: implement this properly\n    return data;\n  }\n  // ... 200 more lines\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AD",
+      "Z",
+      "Q",
+      "S"
+    ],
+    "notes": "Multiple TODOs, stale flags, deprecated function — TECHDEBT + FLAGS scanners"
+  },
+  {
+    "id": "eval_013",
+    "category": "vibe_code",
+    "language": "EN",
+    "prompt": "I used ChatGPT to write this authentication module. Can you check it?\n\n```ts\nimport { createJWT } from 'jwt-magic'; // npm package\nimport { hashPassword } from 'crypto-utils-v3'; // utility\n\nexport async function loginUser(email: string, password: string) {\n  console.log('Attempting login for:', email);\n  // TODO: add rate limiting\n  const user = await User.findByEmail(email);\n  const token = createJWT({ userId: user.id }); // TODO: add expiry\n  console.log('Login successful');\n  return { token, user };\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AK",
+      "B",
+      "H",
+      "A"
+    ],
+    "notes": "AI-generated code with hallucinated npm packages, console.log, TODO debris — VIBECODE scanner"
+  },
+  {
+    "id": "eval_014",
+    "category": "database_schema",
+    "language": "ID",
+    "prompt": "David, review schema database saya ini:\n\n```sql\nCREATE TABLE users (\n  id INT,\n  email VARCHAR(255),\n  password TEXT,\n  created TIMESTAMP,\n  deleted BOOLEAN DEFAULT FALSE\n);\n\nCREATE TABLE orders (\n  id INT,\n  user_id INT,\n  amount DECIMAL,\n  status VARCHAR(50),\n  created TIMESTAMP\n);\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "SQ",
+      "B",
+      "AE"
+    ],
+    "notes": "ID language — no PRIMARY KEY, no indexes, password as TEXT, no foreign key — SCHEMA scanner"
+  },
+  {
+    "id": "eval_015",
+    "category": "seo_audit",
+    "language": "EN",
+    "prompt": "Audit the SEO of my Next.js page:\n\n```tsx\nexport default function BlogPost({ post }) {\n  return (\n    <div>\n      <h1>{post.title}</h1>\n      <div dangerouslySetInnerHTML={{ __html: post.content }} />\n    </div>\n  );\n}\n\nexport async function getServerSideProps({ params }) {\n  const post = await fetchPost(params.slug);\n  return { props: { post } };\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "T",
+      "B",
+      "A"
+    ],
+    "notes": "Next.js SSR page with no meta tags, no OG, no structured data, XSS via dangerouslySetInnerHTML — SEO scanner"
+  },
+  {
+    "id": "eval_016",
+    "category": "dockerfile_cicd",
+    "language": "EN",
+    "prompt": "Review my Dockerfile:\n\n```dockerfile\nFROM node:latest\nWORKDIR /app\nCOPY . .\nRUN npm install\nENV DB_PASSWORD=supersecret123\nENV API_KEY=sk-prod-abc123xyz\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "K",
+      "B",
+      "Y"
+    ],
+    "notes": "latest tag, secrets baked into image, running as root, COPY before install — CICD scanner"
+  },
+  {
+    "id": "eval_017",
+    "category": "enhance_mode",
+    "language": "ID",
+    "prompt": "David, enhance loading state di komponen ini — jangan cuma fix, tapi upgrade experience-nya:\n\n```jsx\nfunction ProductList() {\n  const { data, loading } = useProducts();\n  if (loading) return <div>Loading...</div>;\n  if (!data) return <div>No products</div>;\n  return <div>{data.map(p => <ProductCard key={p.id} product={p} />)}</div>;\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "EN",
+      "O",
+      "F",
+      "B"
+    ],
+    "notes": "ID enhance mode — basic loading/empty states need skeleton, illustrated empty state — ENHANCE scanner"
+  },
+  {
+    "id": "eval_018",
+    "category": "bundle_optimization",
+    "language": "EN",
+    "prompt": "Help me optimize my Next.js bundle. My bundle is 3MB+ and initial load is slow:\n\n```ts\n// pages/_app.tsx\nimport * as Lodash from 'lodash';\nimport * as Moment from 'moment';\nimport { Chart } from 'chart.js';\nimport { Editor } from '@tinymce/tinymce-react';\nimport { everything } from '../utils'; // barrel export with 200+ modules\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "V",
+      "C",
+      "B"
+    ],
+    "notes": "Barrel imports, moment.js, full lodash — BUNDLE scanner must detect tree-shaking issues"
+  },
+  {
+    "id": "eval_019",
+    "category": "observability",
+    "language": "EN",
+    "prompt": "Review my logging setup for production readiness:\n\n```python\nimport logging\nlogging.basicConfig(level=logging.DEBUG)\n\ndef process_payment(user_id, card_number, amount):\n    logging.debug(f'Processing payment for user {user_id}, card: {card_number}, amount: {amount}')\n    try:\n        result = payment_gateway.charge(card_number, amount)\n        logging.info(f'Payment success for {user_id}')\n        return result\n    except Exception as e:\n        logging.error(f'Payment failed: {e}')\n        raise\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "U",
+      "B",
+      "AE"
+    ],
+    "notes": "PII (card number) in debug logs, non-structured logging, DEBUG in prod — OBSERV + GDPR scanners"
+  },
+  {
+    "id": "eval_020",
+    "category": "dependency_audit",
+    "language": "EN",
+    "prompt": "Can you check my package.json for security and health issues?\n\n```json\n{\n  \"dependencies\": {\n    \"lodash\": \"*\",\n    \"express\": \"^4.17.1\",\n    \"jsonwebtoken\": \"8.5.1\",\n    \"node-serialize\": \"0.0.4\",\n    \"moment\": \"2.24.0\",\n    \"left-pad\": \"1.3.0\"\n  }\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "H",
+      "B"
+    ],
+    "notes": "Wildcard pin, abandoned packages (left-pad), node-serialize has known RCE CVE, outdated jsonwebtoken"
+  },
+  {
+    "id": "eval_021",
+    "category": "api_contract",
+    "language": "ID",
+    "prompt": "David, review API endpoint saya — apakah contract-nya konsisten?\n\n```ts\n// Endpoint 1\napp.get('/users', (req, res) => {\n  res.json(users);\n});\n\n// Endpoint 2\napp.post('/users', (req, res) => {\n  const user = createUser(req.body);\n  res.send({ success: true, data: user });\n});\n\n// Endpoint 3\napp.delete('/users/:id', (req, res) => {\n  deleteUser(req.params.id);\n  res.status(200).json('deleted');\n});\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AA",
+      "B",
+      "A"
+    ],
+    "notes": "ID language — inconsistent response envelopes, wrong status code for DELETE, missing error responses — APICONTRACT"
+  },
+  {
+    "id": "eval_022",
+    "category": "explain_mode",
+    "language": "EN",
+    "prompt": "I just inherited this codebase. Can you explain what this does and then review it?\n\n```python\ndef process(d, k=None, v=None, f=None):\n    if k: d = {x: d[x] for x in d if x != k}\n    if v: d = {x: d[x] for x in d if d[x] != v}\n    if f: d = {x: f(d[x]) for x in d}\n    return d\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "L",
+      "A",
+      "D",
+      "B"
+    ],
+    "notes": "Explain + review request — EXPLAIN mode (L) activates, then full review follows"
+  },
+  {
+    "id": "eval_023",
+    "category": "negative_no_code",
+    "language": "EN",
+    "prompt": "What's the weather like in Jakarta today?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "Pure factual query, no code — DAVID must NOT trigger"
+  },
+  {
+    "id": "eval_024",
+    "category": "negative_no_code",
+    "language": "ID",
+    "prompt": "Rekomendasikan restoran sushi enak di Kemang, Jakarta.",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "ID language location query — no code context, DAVID must NOT trigger"
+  },
+  {
+    "id": "eval_025",
+    "category": "negative_no_code",
+    "language": "EN",
+    "prompt": "Write me a haiku about debugging.",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "Creative writing request — mentions debugging but no actual code, DAVID must NOT trigger"
+  },
+  {
+    "id": "eval_026",
+    "category": "negative_no_code",
+    "language": "EN",
+    "prompt": "What are the differences between REST and GraphQL architecturally?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "Conceptual architecture question without code — should be answered directly, DAVID not needed"
+  },
+  {
+    "id": "eval_027",
+    "category": "negative_no_code",
+    "language": "ID",
+    "prompt": "Tolong bantu saya buat presentasi untuk meeting besok tentang roadmap produk Q2.",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "ID language — product/business request, zero code context, DAVID must NOT trigger"
+  },
+  {
+    "id": "eval_028",
+    "category": "state_management",
+    "language": "EN",
+    "prompt": "Review my Redux setup — it feels overcomplicated:\n\n```ts\nconst userSlice = createSlice({\n  name: 'user',\n  initialState: { data: null, loading: false, error: null },\n  reducers: {\n    setUser: (state, action) => { state.data = action.payload; },\n    clearUser: (state) => { state.data = null; }\n  }\n});\n\n// In component:\nconst user = useSelector(state => state.user.data);\nconst dispatch = useDispatch();\nuseEffect(() => {\n  fetch('/api/me').then(r => r.json()).then(data => dispatch(setUser(data)));\n}, []);\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "W",
+      "B",
+      "A",
+      "C"
+    ],
+    "notes": "Server state in Redux (should use React Query/SWR) — STATE scanner must flag"
+  },
+  {
+    "id": "eval_029",
+    "category": "generate_tests",
+    "language": "EN",
+    "prompt": "Generate comprehensive unit tests for this function:\n\n```ts\nexport function calculateDiscount(price: number, couponCode: string, userTier: 'free' | 'pro' | 'enterprise'): number {\n  if (price <= 0) throw new Error('Price must be positive');\n  let discount = 0;\n  if (couponCode === 'SAVE10') discount += 10;\n  if (couponCode === 'SAVE20') discount += 20;\n  if (userTier === 'pro') discount += 5;\n  if (userTier === 'enterprise') discount += 15;\n  return Math.min(price * (discount / 100), price);\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "M",
+      "B",
+      "A"
+    ],
+    "notes": "Explicit test generation request — TESTGEN mode must activate"
+  },
+  {
+    "id": "eval_030",
+    "category": "migration_cicd",
+    "language": "EN",
+    "prompt": "Review this database migration before I run it in production:\n\n```sql\n-- Migration 0042_cleanup_users\nALTER TABLE users DROP COLUMN legacy_id;\nDELETE FROM users WHERE created_at < '2020-01-01';\nALTER TABLE orders DROP CONSTRAINT fk_user_id;\nDROP INDEX idx_users_email;\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "J",
+      "B",
+      "SQ"
+    ],
+    "notes": "Destructive migration with no rollback, data deletion without backup — MIGRATE scanner critical"
+  },
+  {
+    "id": "eval_031",
+    "category": "bug_debug",
+    "language": "ID",
+    "prompt": "Bro ini kenapa sih componentku nge-loop terus? Kayaknya infinite re-render tapi gak tau dari mana:\n\n```jsx\nuseEffect(() => {\n  setData(fetchedData);\n}, [data]);\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "B"
+    ],
+    "notes": "Informal ID bug report — implicit trigger; classic useEffect infinite loop"
+  },
+  {
+    "id": "eval_032",
+    "category": "security_audit",
+    "language": "ID",
+    "prompt": "Tolong cek security endpoint login ini dong, gue worried ada yang kurang:\n\n```python\n@app.route('/login', methods=['POST'])\ndef login():\n    user = User.query.filter_by(\n        username=request.json['username'],\n        password=request.json['password']\n    ).first()\n    if user:\n        return jsonify({'token': user.id})\n    return 'Gagal', 401\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "B",
+      "AC"
+    ],
+    "notes": "ID security audit — multiple issues: plain text password, JWT misuse, no rate limit"
+  },
+  {
+    "id": "eval_033",
+    "category": "performance",
+    "language": "ID",
+    "prompt": "Halaman dashboard gue lambat banget, loadingnya lama. Ini query-nya:\n\n```python\ndef get_dashboard():\n    orders = Order.objects.filter(status='active')\n    result = []\n    for order in orders:\n        result.append({\n            'id': order.id,\n            'customer': order.customer.name,\n            'product': order.product.title\n        })\n    return result\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "C"
+    ],
+    "notes": "ID implicit performance — no keyword 'optimize', but 'lambat' + N+1 query pattern"
+  },
+  {
+    "id": "eval_034",
+    "category": "code_review_pr",
+    "language": "ID",
+    "prompt": "Ini PR saya sebelum merge ke main, tolong di-review ya:\n\n```typescript\nasync function deleteUser(id: string) {\n  await db.user.delete({ where: { id } });\n  await db.post.deleteMany({ where: { userId: id } });\n  await db.comment.deleteMany({ where: { userId: id } });\n  await sendSlack(`User ${id} deleted`);\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "B",
+      "D",
+      "E"
+    ],
+    "notes": "ID PR review request — casual phrasing; has missing transaction, error handling issues"
+  },
+  {
+    "id": "eval_035",
+    "category": "full_scan",
+    "language": "ID",
+    "prompt": "David, ini file utama app gue. Tolong scan semuanya ya:\n\n```typescript\nimport express from 'express';\nimport { PrismaClient } from '@prisma/client';\n\nconst app = express();\nconst prisma = new PrismaClient();\n\napp.use(express.json());\n\napp.get('/users', async (req, res) => {\n  const users = await prisma.user.findMany();\n  res.json(users);\n});\n\napp.post('/users', async (req, res) => {\n  const user = await prisma.user.create({ data: req.body });\n  res.json(user);\n});\n\napp.listen(3000);\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "notes": "ID full scan request — explicit 'scan semuanya'; missing auth, validation, error handling"
+  },
+  {
+    "id": "eval_036",
+    "category": "vibe_code",
+    "language": "ID",
+    "prompt": "Ini dari Copilot, gue ga tau ini bener apa ngga, tolong cek:\n\n```typescript\n// TODO: add validation\n// TODO: handle errors\nexport async function processPayment(data: any) {\n  console.log('processing', data);\n  const result = await paymentService.charge(data.amount, data.cardToken);\n  console.log('done', result);\n  return result;\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AK",
+      "B",
+      "P"
+    ],
+    "notes": "ID vibe code — 'dari Copilot' explicit trigger; TODO debris, any type, console.log epidemic"
+  },
+  {
+    "id": "eval_037",
+    "category": "typescript_types",
+    "language": "ID",
+    "prompt": "TypeScript gue banyak banget error `any`, gimana cara fixnya? Ini contohnya:\n\n```typescript\nfunction processData(data: any): any {\n  const items = data.items as any[];\n  return items.map((item: any) => ({\n    id: item.id as any,\n    value: item.value as any\n  }));\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "P",
+      "A"
+    ],
+    "notes": "ID TypeScript audit — 'any epidemic' pattern; implicit trigger through problem description"
+  },
+  {
+    "id": "eval_038",
+    "category": "uiux_audit",
+    "language": "EN",
+    "prompt": "Can you review the UX of this form component? Users keep complaining it's confusing:\n\n```jsx\nfunction PaymentForm({ onSubmit }) {\n  const [loading, setLoading] = useState(false);\n  \n  const handleSubmit = async (e) => {\n    setLoading(true);\n    await onSubmit(e);\n  };\n  \n  return (\n    <form onSubmit={handleSubmit}>\n      <input type='text' placeholder='Card number' />\n      <input type='text' placeholder='Expiry' />\n      <input type='text' placeholder='CVV' />\n      <button type='submit'>{loading ? '...' : 'Pay'}</button>\n    </form>\n  );\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "O",
+      "F",
+      "B"
+    ],
+    "notes": "EN UX audit — multiple issues: no labels, no error states, missing disabled state, security (CVV in text input)"
+  },
+  {
+    "id": "eval_039",
+    "category": "security_audit",
+    "language": "EN",
+    "prompt": "Security review this middleware — we're about to go live:\n\n```javascript\nconst verifyToken = (req, res, next) => {\n  const token = req.headers['authorization'];\n  if (!token) return res.status(401).json({ error: 'No token' });\n  \n  const decoded = jwt.verify(token, process.env.JWT_SECRET);\n  req.user = decoded;\n  next();\n};\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "B",
+      "A",
+      "R"
+    ],
+    "notes": "EN security audit — missing try/catch on jwt.verify, token format not checked, secret fallback risk"
+  },
+  {
+    "id": "eval_040",
+    "category": "resilience",
+    "language": "EN",
+    "prompt": "This service calls 3 external APIs. I'm worried about reliability:\n\n```typescript\nasync function getUserProfile(userId: string) {\n  const user = await userService.getUser(userId);\n  const orders = await orderService.getOrders(userId);\n  const notifications = await notifService.getUnread(userId);\n  \n  return { user, orders, notifications };\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AF",
+      "A",
+      "C"
+    ],
+    "notes": "EN resilience — sequential external calls, no timeout, no circuit breaker, no graceful degradation"
+  },
+  {
+    "id": "eval_041",
+    "category": "tech_debt",
+    "language": "ID",
+    "prompt": "Codebase gue udah lama banget, pengen tau mana yang paling bermasalah:\n\n```typescript\n// TODO: refactor this mess - legacy dari 2019\n// FIXME: this breaks on edge cases\nfunction legacyCalculate(data) {\n  // HACK: workaround for old API\n  if (data && data.items && data.items.length > 0) {\n    // TODO: add proper validation\n    // @deprecated use newCalculate() instead\n    return data.items.reduce(function(acc, item) {\n      // FIXME: wrong formula, but changing breaks downstream\n      return acc + (item.price * item.qty * 1.1);\n    }, 0);\n  }\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AD",
+      "A",
+      "D"
+    ],
+    "notes": "ID tech debt — 'pengen tau mana yang paling bermasalah'; loaded with TODO/FIXME/HACK/@deprecated"
+  },
+  {
+    "id": "eval_042",
+    "category": "observability",
+    "language": "ID",
+    "prompt": "Gimana cara logging yang bener buat production? Ini yang sekarang gue pake:\n\n```javascript\napp.post('/purchase', async (req, res) => {\n  console.log('purchase request:', req.body);\n  const result = await processOrder(req.body);\n  console.log('result:', result);\n  res.json(result);\n});\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "U",
+      "B"
+    ],
+    "notes": "ID observability — 'logging yang bener'; console.log in production, PII in logs, no structured logging"
+  },
+  {
+    "id": "eval_043",
+    "category": "database_schema",
+    "language": "EN",
+    "prompt": "Please review this Prisma schema before we migrate to production:\n\n```prisma\nmodel User {\n  id       String @id @default(uuid())\n  email    String\n  name     String\n  password String\n  posts    Post[]\n}\n\nmodel Post {\n  id      String @id @default(uuid())\n  title   String\n  content String\n  userId  String\n  user    User   @relation(fields: [userId], references: [id])\n}\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "SQ",
+      "B"
+    ],
+    "notes": "EN schema review — missing unique on email, no index on userId FK, no audit fields, password in plain schema"
+  },
+  {
+    "id": "eval_044",
+    "category": "api_contract",
+    "language": "EN",
+    "prompt": "Review this REST API for contract consistency:\n\n```typescript\nrouter.get('/users', getUsers);       // returns { users: User[] }\nrouter.get('/users/:id', getUser);    // returns User directly\nrouter.post('/users', createUser);    // returns { data: User, message: string }\nrouter.delete('/users/:id', deleteUser); // returns 'deleted'\n```",
+    "should_trigger": true,
+    "expected_scanners": [
+      "AA",
+      "D"
+    ],
+    "notes": "EN API contract — inconsistent response envelopes across endpoints; classic AA trigger"
+  },
+  {
+    "id": "eval_045",
+    "category": "negative_conceptual_question",
+    "language": "ID",
+    "prompt": "Menurut kamu mana yang lebih baik untuk startup, React atau Vue? Dari sisi adoption dan ekosistem.",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "ID conceptual comparison — no code, no error, no review request; pure opinion/ecosystem question"
+  },
+  {
+    "id": "eval_046",
+    "category": "negative_learning_question",
+    "language": "EN",
+    "prompt": "Can you explain what a race condition is and why it happens in concurrent programming?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "EN learning/explanation question — no code to audit; just asking for a concept explanation"
+  },
+  {
+    "id": "eval_047",
+    "category": "negative_planning",
+    "language": "ID",
+    "prompt": "Gue mau bikin aplikasi e-commerce. Enaknya pakai tech stack apa ya? Budget server terbatas.",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "ID architecture planning — no code provided; tech stack recommendation question, not a code review"
+  },
+  {
+    "id": "eval_048",
+    "category": "negative_documentation",
+    "language": "EN",
+    "prompt": "Write me a README for a Node.js project that explains installation and basic usage.",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "EN documentation writing — writing a README from scratch; no code to audit or debug"
+  },
+  {
+    "id": "eval_049",
+    "category": "negative_code_generation",
+    "language": "ID",
+    "prompt": "Bisa tolong buatkan fungsi JavaScript untuk format angka jadi rupiah? Misal 15000 jadi 'Rp 15.000'",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "ID code generation request — asking to write new code, not audit/debug/review existing code"
+  },
+  {
+    "id": "eval_050",
+    "category": "bug_debug",
+    "language": "ID",
+    "prompt": "Hei David, fungsi recursive gw infinite loop tapi gw ga tau kenapa. Ini kodenya (Python):",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "B",
+      "HS"
+    ],
+    "notes": "ID bug debug — recursive/infinite loop"
+  },
+  {
+    "id": "eval_051",
+    "category": "bug_debug",
+    "language": "EN",
+    "prompt": "My Express middleware is not calling next() in some paths. Here is the code:",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "B",
+      "HS"
+    ],
+    "notes": "EN bug debug — middleware flow"
+  },
+  {
+    "id": "eval_052",
+    "category": "monorepo",
+    "language": "EN",
+    "prompt": "David, I have a monorepo with 4 packages (shared, api, web, mobile). The shared package exports are causing circular dependency errors. Can you audit?",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "E",
+      "AJ",
+      "HS"
+    ],
+    "notes": "Monorepo multi-package — missing category"
+  },
+  {
+    "id": "eval_053",
+    "category": "monorepo",
+    "language": "ID",
+    "prompt": "David, monorepo gw pakai Turborepo. Ada package yang export berubah tapi dependent packages belum diupdate. Tolong cek.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "A",
+      "AJ",
+      "HS"
+    ],
+    "notes": "ID monorepo dependency drift"
+  },
+  {
+    "id": "eval_054",
+    "category": "legacy_codebase",
+    "language": "EN",
+    "prompt": "Can you review this legacy PHP 5.6 code? We need to find security issues before migrating to PHP 8.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "B",
+      "D",
+      "UA",
+      "HS"
+    ],
+    "notes": "Legacy PHP audit — missing language coverage"
+  },
+  {
+    "id": "eval_055",
+    "category": "legacy_codebase",
+    "language": "ID",
+    "prompt": "David, gw punya codebase Java 8 yang mau di-upgrade ke Java 21. Tolong audit deprecated APIs dan security issues dulu.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "B",
+      "UA",
+      "H",
+      "HS"
+    ],
+    "notes": "ID legacy Java upgrade audit"
+  },
+  {
+    "id": "eval_056",
+    "category": "security_audit",
+    "language": "ID",
+    "prompt": "David, cek kode API payment gateway ini — gw khawatir ada SQL injection dan data exposure.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "B",
+      "AC",
+      "AE",
+      "HS"
+    ],
+    "notes": "ID security — payment/SQL injection"
+  },
+  {
+    "id": "eval_057",
+    "category": "full_scan",
+    "language": "ID",
+    "prompt": "David, ini kode baru gw buat dari scratch pakai Next.js App Router. Tolong full review sebelum gw push ke production.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "ALL"
+    ],
+    "notes": "ID full scan — Next.js App Router"
+  },
+  {
+    "id": "eval_058",
+    "category": "performance",
+    "language": "ID",
+    "prompt": "Query database gw lama banget — 8 detik buat load dashboard. Ini ORM querynya:",
+    "should_trigger": true,
+    "expected_scanners": [
+      "C",
+      "SQ",
+      "HS"
+    ],
+    "notes": "ID performance — slow DB query / ORM N+1"
+  },
+  {
+    "id": "eval_059",
+    "category": "uiux_audit",
+    "language": "ID",
+    "prompt": "David, form checkout gw banyak user yang drop-off di step 3. Tolong audit UX-nya.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "O",
+      "F",
+      "HS"
+    ],
+    "notes": "ID UX audit — checkout form drop-off"
+  },
+  {
+    "id": "eval_060",
+    "category": "typescript_types",
+    "language": "ID",
+    "prompt": "David, TypeScript gw banyak any dan as unknown. Tolong audit dan kasih fix yang proper.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "P",
+      "HS"
+    ],
+    "notes": "ID TypeScript type safety"
+  },
+  {
+    "id": "eval_061",
+    "category": "ambiguous_borderline",
+    "language": "EN",
+    "prompt": "Can you write a simple utility function in JavaScript that formats a number as Indonesian Rupiah?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — pure code generation request, no existing code to review/debug"
+  },
+  {
+    "id": "eval_062",
+    "category": "negative_conceptual_question",
+    "language": "ID",
+    "prompt": "Jelaskan perbedaan antara async/await dan Promise di JavaScript. Mana yang lebih baik?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — conceptual learning question, no code involved"
+  },
+  {
+    "id": "eval_063",
+    "category": "negative_no_code",
+    "language": "EN",
+    "prompt": "What are the pros and cons of microservices vs monolith architecture for a 5-person startup?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — architectural opinion/planning, no code to audit"
+  },
+  {
+    "id": "eval_064",
+    "category": "negative_no_code",
+    "language": "ID",
+    "prompt": "Gw mau buat sistem e-commerce. Menurut kamu enaknya pakai microservices atau monolith dulu?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — ID architectural planning, no code"
+  },
+  {
+    "id": "eval_065",
+    "category": "negative_learning_question",
+    "language": "ID",
+    "prompt": "Bisa kasih contoh sederhana implementasi binary search di Python?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — ID learning/example request, no code to review"
+  },
+  {
+    "id": "eval_066",
+    "category": "negative_no_code",
+    "language": "EN",
+    "prompt": "What database should I use for a real-time chat app — PostgreSQL, MongoDB, or Redis?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — tech selection advice, no code to audit"
+  },
+  {
+    "id": "eval_067",
+    "category": "ambiguous_borderline",
+    "language": "EN",
+    "prompt": "I have a 500-line React component that feels messy. Should I split it up?",
+    "should_trigger": true,
+    "expected_scanners": [
+      "D",
+      "E",
+      "S",
+      "HS"
+    ],
+    "notes": "POSITIVE borderline — describes existing code problem, should trigger for review advice"
+  },
+  {
+    "id": "eval_068",
+    "category": "generate_tests",
+    "language": "ID",
+    "prompt": "David, ini service class gw — tolong generate unit tests yang comprehensive dengan edge cases.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "M",
+      "TQ",
+      "HS"
+    ],
+    "notes": "ID generate tests — service class"
+  },
+  {
+    "id": "eval_069",
+    "category": "dependency_audit",
+    "language": "ID",
+    "prompt": "David, package.json gw ada dependencies yang sudah lama tidak diupdate. Tolong cek CVE dan deprecated packages.",
+    "should_trigger": true,
+    "expected_scanners": [
+      "H",
+      "UA",
+      "HS"
+    ],
+    "notes": "ID dependency + CVE audit"
+  },
+  {
+    "id": "eval_070",
+    "category": "negative_no_code",
+    "language": "EN",
+    "prompt": "How do I set up a new React project from scratch with TypeScript and Tailwind?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — project setup guide, no existing code to audit or debug"
+  },
+  {
+    "id": "eval_071",
+    "category": "negative_no_code",
+    "language": "ID",
+    "prompt": "Cuaca hari ini gimana ya di Jakarta?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — completely off-topic"
+  },
+  {
+    "id": "eval_072",
+    "category": "negative_documentation",
+    "language": "EN",
+    "prompt": "Can you write a blog post explaining the difference between SQL and NoSQL databases?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — content writing, no code"
+  },
+  {
+    "id": "eval_073",
+    "category": "negative_planning",
+    "language": "ID",
+    "prompt": "Gw mau buat startup fintech. Kira-kira MVP-nya harus fitur apa aja ya?",
+    "should_trigger": false,
+    "expected_scanners": [],
+    "notes": "NEGATIVE — product planning question, no code"
+  }
+]
