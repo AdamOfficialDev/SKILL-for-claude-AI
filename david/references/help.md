@@ -16,42 +16,113 @@ Respond in the user's current language. Use the EN column/section for English us
 7. [FAQ — EN](#faq-en)
 8. [FAQ — ID](#faq-id)
 
+**Command categories (EN & ID):** Session Lifecycle · Scope & Focus · Speed & Depth Overrides · Fix Application · Finding Management · Output & Export · Format & Verbosity · Mode Switching · History & Undo
+
 ---
 
 ## Commands — EN
 
 When the user writes in **English**, output this section verbatim as a formatted response.
 
-### Session Commands
+### Session Lifecycle
 
 | Command | What it does |
 |---------|-------------|
-| `david: status` | Print full session state — files audited, stack detected, all findings open/fixed, active exceptions, current Health Score |
+| `david: status` | Print full session state — files audited, stack, all findings, active exceptions, current Health Score |
 | `david: help` | Show this command reference in your current language |
-| `david: exception [pattern]` | Register a permanent skip for this session. Example: `david: exception console.log` — DAVID will never flag console.log again this session |
+| `david: end session` | Properly close the session — triggers full health score + summary + safety gate, then resets state |
+| `david: reset` | Wipe all findings, exceptions, and iteration counter — start fresh on the same files |
+| `david: checkpoint` | Snapshot session state as a pasteable text block to resume in a new conversation |
+| `david: pause` | Freeze all scanning until you send `david: resume` — useful mid-edit |
+| `david: resume` | Unpause scanning and re-run active scanners on current state |
 
-### Speed & Scope Overrides
-
-| Command | What it does |
-|---------|-------------|
-| `david: quick` | Switch to TIER 1 mode — short answer, no health score, no full scanner sweep. Good for a fast single question |
-| `david: full` | Force TIER 4 full session — all scanners, all phases, health score, PR description. Overrides auto-detection |
-| `david: diff only` | Restrict scanner scope to changed lines only (git diff mode). Leaves unchanged code as baseline |
-| `david: no health score` | Skip the Code Health Score banner at the end of the session |
-
-### Fix Application Overrides
+### Scope & Focus
 
 | Command | What it does |
 |---------|-------------|
-| `david: just apply it` | Apply the current proposed fix immediately without waiting for confirmation. Use when you trust the finding |
-| `david: apply all` | Apply all pending SAFE TO APPLY findings in one batch. Does not apply REVIEW FIRST or CONFIRM BEFORE APPLY items |
-| `david: explain [id]` | Deep-dive explanation for a specific finding. Example: `david: explain BUG-003` — DAVID explains root cause, impact, and alternative fixes |
+| `david: focus [file]` | Restrict scanning to a specific file/path. Others stay in context but won't be flagged. Example: `david: focus src/api/auth.ts` |
+| `david: run [scanner]` | Manually trigger a specific scanner by code. Example: `david: run SEC` forces a security audit |
+| `david: skip [file]` | Add a whole file to the exception register — DAVID won't audit it this session |
+| `david: only [priority]` | Filter output to show only specific priorities. Example: `david: only P0 P1` or `david: only SEC` |
+| `david: rescan` | Force a fresh re-scan of all loaded files from scratch — resets iteration counter |
+| `david: scope [scanners]` | Enable only specific scanners for this session. Example: `david: scope SEC PERF TQ` |
 
-### Information Commands
+### Speed & Depth Overrides
 
 | Command | What it does |
 |---------|-------------|
-| `david: status` | Full session snapshot — findings by severity, files touched, lines changed, unauthorized deletions (always 0) |
+| `david: quick` | Switch to TIER 1 mode — short answer, no health score, no full scanner sweep |
+| `david: full` | Force TIER 4 full session — all scanners, all phases, health score, PR description |
+| `david: diff only` | Restrict scanner scope to changed lines only (git diff mode) |
+| `david: no health score` | Skip the Code Health Score banner at the end of this session |
+
+### Fix Application
+
+| Command | What it does |
+|---------|-------------|
+| `david: just apply it` | Apply the current proposed fix immediately without waiting for confirmation |
+| `david: apply all` | Apply all pending findings including CONFIRM BEFORE items (DAVID warns first) |
+| `david: dry run` | Preview exactly what changes would be applied — no code touched |
+| `david: auto` | Autonomous mode — auto-apply SAFE TO APPLY + REVIEW FIRST without pause |
+| `david: batch [ids]` | Apply a specific subset of findings by ID. Example: `david: batch SEC-001 BUG-003` |
+| `david: baseline` | Set current code state as health score baseline (delta resets to 0 from now) |
+| `david: watchlist [pattern]` | Register a pattern to always flag across all files this session |
+
+### Finding Management
+
+| Command | What it does |
+|---------|-------------|
+| `david: explain [id]` | Deep-dive on a specific finding — root cause, impact, alternatives. Example: `david: explain BUG-003` |
+| `david: exception [pattern]` | Register a permanent skip for this session. Example: `david: exception console.log` |
+| `david: remove exception [N]` | Remove exception N from the register (N from `david: status`) |
+| `david: defer [id] [reason]` | Defer a finding with a recorded reason — appears in Final Summary. Example: `david: defer ARCH-001 — post-launch` |
+| `david: close [id]` | Mark a finding resolved (you fixed it yourself). Example: `david: close SEC-002` |
+| `david: wontfix [id] [reason]` | Mark finding as intentional — won't be re-flagged. Example: `david: wontfix TS-004 — intentional any` |
+| `david: escalate [id]` | Bump finding priority up one level (P3→P2, P2→P1, P1→P0) |
+| `david: note [id] [text]` | Attach a custom annotation to a finding — appears in exports |
+| `david: reopen [id]` | Reopen a finding previously closed or marked wontfix |
+
+### Output & Export
+
+| Command | What it does |
+|---------|-------------|
+| `david: export` | Full session report as a markdown block — findings, fixes, health score |
+| `david: export findings` | Findings list only in compact table format — for Linear/Jira/GitHub import |
+| `david: export pr` | Ready-to-paste GitHub PR description based on all session changes |
+| `david: tldr` | Ultra-short 3–5 line session summary — what was found, fixed, and remains |
+| `david: report [audience]` | Audience-specific summary: `dev` · `manager` · `security` |
+| `david: json` | Output all findings as a JSON array for CI scripts or issue-tracker APIs |
+
+### Format & Verbosity
+
+| Command | What it does |
+|---------|-------------|
+| `david: verbose` | Max detail per finding — full root cause, 3 alternatives, confidence breakdown |
+| `david: silent` | Minimal output — fixed code only, no banners, no emoji, no health score |
+| `david: compact` | One-liner finding cards — sacrifice detail for density (best for 30+ findings) |
+| `david: table` | Output all findings as a markdown table instead of individual cards |
+| `david: no emoji` | Disable all emoji — pure text mode for terminals that don't render them |
+| `david: lang [en/id]` | Force output language regardless of input. Example: `david: lang en` |
+
+### Mode Switching
+
+| Command | What it does |
+|---------|-------------|
+| `david: mode security` | Security-only — Scanner B + AC + AE + AF. No performance or UX output |
+| `david: mode review` | Code review — D + E + P + Q + S only. Simulates a senior PR reviewer |
+| `david: mode explain` | Explain-only — no fixes, DAVID walks through the code conceptually |
+| `david: mode enhance` | Enhancement-only — EN (E1–E12) active, no bug or security output |
+| `david: mode mentor` | Teaching mode — educational explanation before every fix |
+| `david: mode triage` | Triage-only — full scan, no fixes, just a prioritized map of all findings |
+
+### History & Undo
+
+| Command | What it does |
+|---------|-------------|
+| `david: history` | Print every finding ever raised this session — fixed, closed, deferred, wontfix, open |
+| `david: undo` | Revert the last applied fix batch and restore previous code state (one level) |
+| `david: replay [N]` | Show exactly what was found and fixed in iteration N. Example: `david: replay 1` |
+| `david: diff session` | Unified git-style diff of ALL changes applied across the entire session |
 
 ---
 
@@ -62,6 +133,8 @@ When the user writes in **English**, output this section verbatim as a formatted
 - **One message, one problem**: Include code + error message + context all in one message for the fastest results.
 - **Fix Confidence labels**: Every finding is tagged `SAFE TO APPLY`, `REVIEW FIRST`, or `CONFIRM BEFORE APPLY` — you decide what gets applied.
 - **DAVID never deletes silently**: If a line needs to go, DAVID will tell you first and wait for your OK.
+- **Send `david: mode off`** to exit any mode and return to auto-detection.
+- **Most format/scope commands persist** for the rest of the session. Append `off` to clear (e.g. `david: only off`, `david: focus off`).
 
 ---
 
@@ -69,30 +142,105 @@ When the user writes in **English**, output this section verbatim as a formatted
 
 Saat user menulis dalam **Bahasa Indonesia**, output section ini sebagai response yang diformat.
 
-### Perintah Sesi
+### Session Lifecycle (Siklus Sesi)
 
 | Perintah | Fungsi |
 |----------|--------|
-| `david: status` | Tampilkan state sesi lengkap — file yang sudah diaudit, stack yang terdeteksi, semua findings yang open/fixed, exception aktif, Health Score saat ini |
+| `david: status` | Tampilkan state sesi lengkap — file yang sudah diaudit, stack, semua findings, exception aktif, Health Score saat ini |
 | `david: help` | Tampilkan referensi perintah ini dalam bahasa kamu saat ini |
-| `david: exception [pattern]` | Daftarkan skip permanen untuk sesi ini. Contoh: `david: exception console.log` — DAVID tidak akan pernah flag console.log lagi di sesi ini |
+| `david: end session` | Tutup sesi dengan benar — trigger health score + summary + safety gate, lalu reset state |
+| `david: reset` | Hapus semua findings, exception, dan iteration counter — mulai segar di file yang sama |
+| `david: checkpoint` | Snapshot state sesi sebagai teks yang bisa di-paste ke chat baru untuk melanjutkan |
+| `david: pause` | Bekukan semua scanning sampai kamu kirim `david: resume` — berguna saat lagi edit manual |
+| `david: resume` | Lanjutkan scanning dan jalankan ulang scanner yang aktif pada state saat ini |
 
-### Override Kecepatan & Cakupan
-
-| Perintah | Fungsi |
-|----------|--------|
-| `david: quick` | Switch ke TIER 1 — jawaban singkat, tanpa health score, tanpa full scanner sweep. Cocok untuk pertanyaan cepat satu-satu |
-| `david: full` | Paksa TIER 4 full session — semua scanner, semua phase, health score, PR description. Override auto-detection |
-| `david: diff only` | Batasi cakupan scanner hanya ke baris yang berubah (mode git diff). Kode yang tidak berubah jadi baseline |
-| `david: no health score` | Skip banner Code Health Score di akhir sesi |
-
-### Override Penerapan Fix
+### Scope & Focus (Cakupan & Fokus)
 
 | Perintah | Fungsi |
 |----------|--------|
-| `david: just apply it` | Langsung terapkan fix yang sedang diusulkan tanpa menunggu konfirmasi. Pakai kalau kamu sudah percaya dengan finding-nya |
-| `david: apply all` | Terapkan semua pending findings yang berlabel SAFE TO APPLY sekaligus. Tidak menyentuh item REVIEW FIRST atau CONFIRM BEFORE APPLY |
-| `david: explain [id]` | Penjelasan mendalam untuk finding tertentu. Contoh: `david: explain BUG-003` — DAVID jelasin root cause, dampak, dan alternatif fix |
+| `david: focus [file]` | Batasi scanning ke satu file/path. File lain tetap di konteks tapi tidak akan di-flag. Contoh: `david: focus src/api/auth.ts` |
+| `david: run [scanner]` | Jalankan scanner tertentu secara manual berdasarkan kode. Contoh: `david: run SEC` |
+| `david: skip [file]` | Tambahkan satu file ke exception register — DAVID tidak akan audit file itu sesi ini |
+| `david: only [priority]` | Filter output ke prioritas tertentu saja. Contoh: `david: only P0 P1` atau `david: only SEC` |
+| `david: rescan` | Paksa scan ulang dari nol untuk semua file yang dimuat — reset iteration counter |
+| `david: scope [scanners]` | Aktifkan hanya scanner tertentu untuk sesi ini. Contoh: `david: scope SEC PERF TQ` |
+
+### Override Kecepatan & Kedalaman
+
+| Perintah | Fungsi |
+|----------|--------|
+| `david: quick` | Switch ke TIER 1 — jawaban singkat, tanpa health score, tanpa full scanner sweep |
+| `david: full` | Paksa TIER 4 full session — semua scanner, semua phase, health score, PR description |
+| `david: diff only` | Batasi cakupan scanner hanya ke baris yang berubah (mode git diff) |
+| `david: no health score` | Skip banner Code Health Score di akhir sesi ini |
+
+### Penerapan Fix
+
+| Perintah | Fungsi |
+|----------|--------|
+| `david: just apply it` | Langsung terapkan fix yang sedang diusulkan tanpa menunggu konfirmasi |
+| `david: apply all` | Terapkan semua pending findings termasuk CONFIRM BEFORE (DAVID kasih peringatan dulu) |
+| `david: dry run` | Preview persis apa yang akan diubah — tidak ada kode yang disentuh |
+| `david: auto` | Mode otonom — auto-terapkan SAFE TO APPLY + REVIEW FIRST tanpa pause |
+| `david: batch [ids]` | Terapkan subset finding tertentu berdasarkan ID. Contoh: `david: batch SEC-001 BUG-003` |
+| `david: baseline` | Set state kode saat ini sebagai baseline health score (delta reset ke 0 dari sekarang) |
+| `david: watchlist [pattern]` | Daftarkan pattern yang selalu di-flag di semua file sesi ini |
+
+### Manajemen Finding
+
+| Perintah | Fungsi |
+|----------|--------|
+| `david: explain [id]` | Penjelasan mendalam untuk finding tertentu — root cause, dampak, alternatif. Contoh: `david: explain BUG-003` |
+| `david: exception [pattern]` | Daftarkan skip permanen untuk sesi ini. Contoh: `david: exception console.log` |
+| `david: remove exception [N]` | Hapus exception N dari register (N dari `david: status`) |
+| `david: defer [id] [reason]` | Defer finding dengan alasan yang dicatat — muncul di Final Summary. Contoh: `david: defer ARCH-001 — post-launch` |
+| `david: close [id]` | Tandai finding sebagai resolved (kamu yang fix sendiri). Contoh: `david: close SEC-002` |
+| `david: wontfix [id] [reason]` | Tandai finding sebagai by-design — tidak akan di-flag lagi. Contoh: `david: wontfix TS-004 — intentional any` |
+| `david: escalate [id]` | Naikkan prioritas finding satu level (P3→P2, P2→P1, P1→P0) |
+| `david: note [id] [text]` | Tambahkan anotasi kustom ke finding — muncul di export |
+| `david: reopen [id]` | Buka kembali finding yang sudah di-close atau di-wontfix |
+
+### Output & Export
+
+| Perintah | Fungsi |
+|----------|--------|
+| `david: export` | Laporan sesi lengkap sebagai markdown block — findings, fixes, health score |
+| `david: export findings` | Daftar findings saja dalam format tabel kompak — untuk import ke Linear/Jira/GitHub |
+| `david: export pr` | PR description GitHub yang siap di-paste berdasarkan semua perubahan sesi |
+| `david: tldr` | Ringkasan sesi 3–5 baris — apa yang ditemukan, diperbaiki, dan tersisa |
+| `david: report [audience]` | Ringkasan spesifik untuk audiens: `dev` · `manager` · `security` |
+| `david: json` | Output semua findings sebagai JSON array untuk CI script atau issue-tracker API |
+
+### Format & Verbosity
+
+| Perintah | Fungsi |
+|----------|--------|
+| `david: verbose` | Detail maksimal per finding — full root cause, 3 alternatif, breakdown confidence |
+| `david: silent` | Output minimal — hanya kode yang sudah difix, tanpa banner, emoji, atau health score |
+| `david: compact` | Finding card satu baris — korbankan detail untuk kepadatan (terbaik untuk 30+ findings) |
+| `david: table` | Output semua findings sebagai tabel markdown daripada kartu individual |
+| `david: no emoji` | Nonaktifkan semua emoji — mode teks murni untuk terminal yang tidak render emoji |
+| `david: lang [en/id]` | Paksa bahasa output terlepas dari bahasa input. Contoh: `david: lang id` |
+
+### Mode Switching (Ganti Mode)
+
+| Perintah | Fungsi |
+|----------|--------|
+| `david: mode security` | Mode security saja — Scanner B + AC + AE + AF. Tanpa output performa atau UX |
+| `david: mode review` | Mode code review — D + E + P + Q + S saja. Simulasi PR reviewer senior |
+| `david: mode explain` | Mode explain saja — tanpa fix, DAVID menjelaskan kode secara konseptual |
+| `david: mode enhance` | Mode enhancement saja — EN (E1–E12) aktif, tanpa output bug atau security |
+| `david: mode mentor` | Mode mentor — penjelasan edukatif sebelum setiap fix |
+| `david: mode triage` | Mode triage saja — full scan, tanpa fix, hanya peta prioritas semua findings |
+
+### History & Undo (Riwayat & Batalkan)
+
+| Perintah | Fungsi |
+|----------|--------|
+| `david: history` | Tampilkan semua finding yang pernah diangkat sesi ini — fixed, closed, deferred, wontfix, open |
+| `david: undo` | Batalkan batch fix terakhir dan restore state kode sebelumnya (satu level) |
+| `david: replay [N]` | Tampilkan persis apa yang ditemukan dan diperbaiki di iterasi N. Contoh: `david: replay 1` |
+| `david: diff session` | Unified diff gaya git dari SEMUA perubahan yang diterapkan sepanjang sesi |
 
 ---
 
@@ -103,6 +251,8 @@ Saat user menulis dalam **Bahasa Indonesia**, output section ini sebagai respons
 - **Satu pesan, satu masalah**: Masukkan kode + error message + konteks dalam satu pesan untuk hasil paling cepat.
 - **Label Fix Confidence**: Setiap finding diberi tag `SAFE TO APPLY`, `REVIEW FIRST`, atau `CONFIRM BEFORE APPLY` — kamu yang memutuskan apa yang diterapkan.
 - **DAVID tidak pernah hapus diam-diam**: Kalau ada baris yang harus dihapus, DAVID akan bilang dulu dan tunggu persetujuan kamu.
+- **Kirim `david: mode off`** untuk keluar dari mode apapun dan kembali ke auto-detection.
+- **Sebagian besar perintah format/scope bertahan** sepanjang sesi. Tambahkan `off` untuk membatalkan (misal: `david: only off`, `david: focus off`).
 
 ---
 

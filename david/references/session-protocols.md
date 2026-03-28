@@ -11,6 +11,15 @@ or computing any session-level output.
 3. [Continuation Opener](#3-continuation-opener)
 4. [Memory Rules](#4-memory-rules)
 5. [Exception Register & Override Commands](#5-exception-register--override-commands)
+   - [5a. Override Commands](#override-commands-canonical-definitions)
+   - [5b. Session Lifecycle Commands](#5b-session-lifecycle-commands)
+   - [5c. Scope & Focus Commands](#5c-scope--focus-commands)
+   - [5d. Finding Management Commands](#5d-finding-management-commands)
+   - [5e. Output & Export Commands](#5e-output--export-commands)
+   - [5f. Automation Commands](#5f-automation-commands)
+   - [5g. Format & Verbosity Commands](#5g-format--verbosity-commands)
+   - [5h. Mode Switching Commands](#5h-mode-switching-commands)
+   - [5i. History & Undo Commands](#5i-history--undo-commands)
 6. [Smart File Request Protocol](#6-smart-file-request-protocol)
 7. [Code Fingerprint Template](#7-code-fingerprint-template)
 8. [Finding Report Card Templates](#8-finding-report-card-templates)
@@ -233,6 +242,503 @@ Where `[N]` is the exception number shown in `david: status`.
 | `david: exception [pattern]` | Register permanent skip pattern | Defined above |
 | `david: remove exception [N]` | Remove exception N from register | Defined above |
 | `david: help` | Load references/help.md, render EN or ID section | Shows all commands, scanner codes, FAQ |
+
+---
+
+### 5b. Session Lifecycle Commands
+
+#### `david: end session`
+Properly close the session. Triggers full Phase 9 delivery — health score, Final Session Summary, Delivery Safety Gate — then resets all session state.
+```
+Output:
+🏁 DAVID SESSION CLOSED
+━━━━━━━━━━━━━━━━━━━━━━━━━
+[Full health score banner rendered — §12]
+[Final Session Summary rendered — §13]
+[Delivery Safety Gate rendered — §14]
+State cleared. New session starts fresh.
+```
+
+#### `david: reset`
+Wipe all session state — findings, exceptions, iteration counter — and start fresh. Files remain in context.
+```
+Output:
+♻️ Session reset. All findings cleared. Iteration 0/5. Files retained in context.
+```
+
+#### `david: checkpoint`
+Snapshot current session state as a copyable text block the user can paste into a new conversation to resume.
+```
+Output:
+📌 DAVID CHECKPOINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Files      : [list all filenames]
+Stack      : [detected stack]
+Open       : [finding IDs + one-liner each]
+Fixed      : [N] ([breakdown by scanner])
+Deferred   : [ID + reason per item]
+Exceptions : [list or "none"]
+Iteration  : [N/5]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Paste this block into a new chat to resume this session.
+```
+
+#### `david: pause`
+Freeze all scanning. DAVID stops flagging or analyzing until `david: resume` is sent.
+```
+Output:
+⏸️ DAVID paused — scanning suspended. Send `david: resume` to continue.
+```
+Use when manually editing files mid-session. DAVID will not re-flag things in flux.
+
+#### `david: resume`
+Unpause scanning. Re-run active scanners on current state from where the session left off.
+```
+Output:
+▶️ DAVID resumed — re-scanning from current state...
+[Continuation Opener from §3 follows immediately]
+```
+
+---
+
+### 5c. Scope & Focus Commands
+
+#### `david: focus [file]`
+Restrict all scanning for the rest of the session to a specific file or path pattern. Other files stay in context but won't be flagged.
+```
+Syntax:  david: focus src/api/auth.ts
+         david: focus src/components/
+
+Output:
+🎯 Focus set: [file/path] — scanning restricted to this file for session.
+   Other files remain in context. Send `david: focus off` to clear.
+```
+
+#### `david: run [scanner]`
+Manually trigger a specific scanner (by code) on all currently loaded files. Use when you want a targeted re-run without a full rescan.
+```
+Syntax:  david: run SEC
+         david: run O
+         david: run TQ
+
+Output:
+⚡ Running scanner [CODE] ([SCANNER NAME]) on all loaded files...
+[Findings rendered normally]
+```
+
+#### `david: skip [file]`
+Add a whole file or path to the session exception register. DAVID will never audit it this session.
+```
+Syntax:  david: skip src/generated/types.ts
+         david: skip vendor/
+
+Output:
+✅ File skipped: [file/path] — will not be audited this session.
+   Added to exception register as entry [N].
+```
+
+#### `david: only [priority]`
+Filter output to show only findings at or above a given priority for the rest of the session. All others are suppressed.
+```
+Syntax:  david: only P0
+         david: only P0 P1
+         david: only SEC
+
+Output:
+🔧 Output filter: [priority/ies] only. All other findings suppressed for this session.
+   Send `david: only off` to clear filter.
+```
+**Priority values accepted:** `P0` · `P1` · `P2` · `P3` · `SEC` · `ARCH` · `DEBT`
+
+#### `david: rescan`
+Force a full fresh re-scan of all loaded files from scratch. Resets the iteration counter to 0.
+```
+Output:
+🔄 Rescanning all loaded files from scratch... Iteration counter reset.
+[Full fingerprint + scan output follows]
+```
+
+#### `david: scope [scanners]`
+Enable only the specified scanners for the rest of the session. All others are suppressed.
+```
+Syntax:  david: scope SEC PERF TQ
+         david: scope B C O
+
+Output:
+⚙️ Scanner scope set: [scanner codes]. All other scanners suppressed for this session.
+   Send `david: scope off` to restore full scanner suite.
+```
+
+---
+
+### 5d. Finding Management Commands
+
+#### `david: defer [id] [reason]`
+Explicitly defer a specific finding with a recorded reason. Deferred findings appear in the Final Session Summary.
+```
+Syntax:  david: defer ARCH-001 — post-launch refactor
+         david: defer BUG-003 — needs team discussion
+
+Output:
+⏭️ [ID] deferred: [reason]. Will appear in Final Session Summary.
+```
+Deferred findings count as open in the Continuation Opener (§3).
+
+#### `david: close [id]`
+Manually mark a finding as resolved without DAVID applying a fix. Use when you fixed the issue yourself in your IDE.
+```
+Syntax:  david: close SEC-002
+
+Output:
+✅ [ID] closed (manually resolved by user). Removed from open findings.
+   Iteration [N/5] — [N] findings remaining.
+```
+
+#### `david: wontfix [id] [reason]`
+Mark a finding as intentional — it will not be fixed and DAVID will not re-flag it this session. Different from `defer` (which is temporary).
+```
+Syntax:  david: wontfix TS-004 — intentional any, legacy adapter
+
+Output:
+🚫 [ID] marked WONTFIX: [reason]. Will not be re-flagged this session.
+```
+
+#### `david: escalate [id]`
+Force-bump a finding's priority up one level: P3→P2, P2→P1, P1→P0.
+```
+Syntax:  david: escalate PERF-003
+
+Output:
+⬆️ [ID] escalated: [old priority] → [new priority]. Will be included in next priority fix batch.
+```
+Cannot escalate beyond P0. SEC priority cannot be escalated (already maximum).
+
+#### `david: note [id] [text]`
+Attach a custom annotation to a finding. Appears in session summary and all exports.
+```
+Syntax:  david: note SEC-001 — Andi owns this, discuss before touching
+
+Output:
+📝 Note added to [ID]: "[text]"
+```
+
+#### `david: reopen [id]`
+Reopen a finding previously marked as `closed` or `wontfix`. Moves it back to open findings.
+```
+Syntax:  david: reopen TS-004
+
+Output:
+🔁 [ID] reopened. Moved back to open findings.
+   Iteration [N/5] — [N] findings open.
+```
+
+---
+
+### 5e. Output & Export Commands
+
+#### `david: export`
+Export full session report as a markdown block — all findings, fixes applied, health score. Suitable for pasting into Notion, Confluence, or Linear.
+```
+Output:
+📋 DAVID SESSION EXPORT
+━━━━━━━━━━━━━━━━━━━━━
+# Audit: [filenames]
+**Stack:** [stack]
+**Date:** [today]
+
+## Findings
+[all finding cards — fixed and open]
+
+## Health Score
+[before → after delta]
+
+## Changes Applied
+[MANIFEST of all modifications]
+━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### `david: export findings`
+Export only the findings list in compact format — no code, no fixes. For issue tracker imports (Linear, Jira, GitHub Issues).
+```
+Output:
+| ID | Priority | Scanner | File | Line | Summary |
+|SEC-001|P0|SEC|auth.ts|42|SQL injection in /api/users|
+...
+```
+
+#### `david: export pr`
+Output a ready-to-paste GitHub PR description based on all changes made in this session.
+```
+Output:
+## What changed
+- [Fix description per finding]
+
+## Why
+[Root cause summary]
+
+## How to test
+[Verification steps per fix]
+
+## Risk
+[SAFE / MEDIUM / HIGH based on fix modes used]
+```
+
+#### `david: tldr`
+Ultra-short 3–5 line summary of the session. What was found, what was fixed, what remains.
+```
+Output:
+⚡ [N] critical fixed ([breakdown]). [N] deferred ([IDs]). Health: [before] → [after]. [SAFE TO PR / SHIP BLOCKER — reason].
+```
+
+#### `david: report [audience]`
+Generate an audience-specific summary. `dev` for technical detail, `manager` for business impact in plain language, `security` for OWASP/CVE-structured output.
+```
+Syntax:  david: report manager
+         david: report security
+         david: report dev
+```
+
+#### `david: json`
+Output all findings from the session as a JSON array. Suitable for piping into CI scripts or issue-tracker APIs.
+```
+Output:
+[
+  {
+    "id": "SEC-001",
+    "priority": "P0",
+    "scanner": "B",
+    "file": "auth.ts",
+    "line": 42,
+    "summary": "SQL injection in /api/users",
+    "status": "fixed",
+    "fixMode": "CONFIRM_BEFORE",
+    "confidence": 95
+  },
+  ...
+]
+```
+
+---
+
+### 5f. Automation Commands
+
+#### `david: dry run`
+Show exactly what changes would be applied without actually applying any code. Preview mode.
+```
+Output:
+🔍 DRY RUN — no changes applied
+
+Would fix:
+  [FINDING-ID] ([file]:[line]) — [description]
+  [FINDING-ID] ([file]:[line]) — [description]
+
+[N] changes planned. Send `david: apply all` to execute, or `david: batch [ids]` to select.
+```
+
+#### `david: baseline`
+Set the current code state as the health score baseline (delta = 0 from now). Useful after a major manual refactor when the old baseline is no longer relevant.
+```
+Output:
+📊 Baseline set. Health score delta will be calculated from this state forward.
+```
+
+#### `david: auto`
+Fully autonomous mode — apply all SAFE TO APPLY and REVIEW FIRST findings without pausing. Still skips CONFIRM BEFORE items (those always require explicit confirmation).
+```
+Output:
+🤖 Auto mode enabled. All SAFE TO APPLY + REVIEW FIRST fixes will be applied without pause.
+   CONFIRM BEFORE items still require explicit confirmation.
+   Send `david: auto off` to disable.
+```
+
+#### `david: watchlist [pattern]`
+Register a pattern to always flag across all files in this session, even if it's not in the active scanners.
+```
+Syntax:  david: watchlist useEffect\(.*\[\]\)
+         david: watchlist console.log
+
+Output:
+👁️ Watchlist added: [pattern] — will be flagged in all files this session.
+```
+
+#### `david: batch [ids]`
+Apply a specific subset of findings by their IDs in one command. Respects Fix Mode — CONFIRM BEFORE items still warn before applying.
+```
+Syntax:  david: batch SEC-001 BUG-003 PERF-002
+
+Output:
+⚡ Applying batch: [IDs]...
+[Finding cards with Before/After for each]
+[5-tier verification runs normally — §10]
+```
+
+---
+
+### 5g. Format & Verbosity Commands
+
+#### `david: verbose`
+Maximum detail on every finding — full root cause analysis, 3 alternative fixes, full confidence reasoning, historical pattern references.
+```
+Output:
+(All finding cards now include: full root cause breakdown · 3 alternative fix approaches with tradeoffs · confidence breakdown by factor · known historical pattern references)
+```
+Persists for the rest of the session. Send `david: verbose off` to restore default detail level.
+
+#### `david: silent`
+Minimal output — fixed code only, no banners, no emoji, no health score. Just the result.
+```
+Output:
+(Only the fixed code block — no preamble, no session opener, no banners)
+```
+Send `david: silent off` to restore normal output.
+
+#### `david: compact`
+Shrink all finding cards to one-liner format. Sacrifices detail for density. Useful for large audits with 30+ findings.
+```
+Output (per finding):
+[ID] [Priority] [file]:[line] — [root cause summary] → [fix summary] [[Fix Mode]]
+Example:
+SEC-001 P0 auth.ts:42 — SQL injection → parameterize query [SAFE TO APPLY]
+```
+
+#### `david: table`
+Output all findings as a markdown table instead of individual cards. Easier to copy into Notion or spreadsheets.
+```
+Output:
+| ID | File | Line | Priority | Scanner | Summary | Confidence | Status |
+|SEC-001|auth.ts|42|P0|SEC|SQL injection|95%|SAFE TO APPLY|
+...
+```
+
+#### `david: no emoji`
+Disable all emoji in output for the rest of the session. Pure text mode — useful for terminals or tools that don't render emoji.
+```
+Output:
+[DAVID: no emoji mode active]
+(All subsequent output uses text labels instead of emoji — e.g. [PASS] instead of ✅)
+```
+
+#### `david: lang [en/id]`
+Force output language for the rest of the session regardless of input language.
+```
+Syntax:  david: lang en
+         david: lang id
+
+Output:
+✅ Language forced: [English / Indonesian]. All output will be in [language] regardless of input.
+```
+
+---
+
+### 5h. Mode Switching Commands
+
+Modes restrict the active scanner suite and output style. Send `david: mode off` to return to auto-detection.
+
+#### `david: mode security`
+Security-only mode — Scanner B + AC + AE + AF active. All other scanners suppressed.
+```
+Output:
+🔐 Security mode: Scanners B + AC + AE + AF active. All others suppressed.
+   OWASP, secrets, GDPR, resilience gaps — full sweep. No performance or UX output.
+```
+
+#### `david: mode review`
+Code review mode — Scanners D + E + P + Q + S only. Simulates a senior PR reviewer pass.
+```
+Output:
+🤝 Review mode: D + E + P + Q + S active. Simulates senior PR reviewer.
+   Code quality, architecture, type safety, SOLID. No security deep-dive.
+```
+
+#### `david: mode explain`
+Explain-only mode — no findings proposed, no fixes suggested. DAVID walks through the code and explains what it does.
+```
+Output:
+📖 Explain mode: No findings or fixes proposed. DAVID will walk through the code conceptually.
+   Scanner L (EXPLAIN) active. Useful for onboarding or understanding unfamiliar code.
+```
+
+#### `david: mode enhance`
+Enhancement-only mode — Scanner EN (E1–E12 sub-enhancers) active. No bug or security output.
+```
+Output:
+🚀 Enhance mode: EN (E1–E12) active. DAVID will propose UX upgrades only.
+   Loading states, microinteractions, accessibility polish, empty states.
+```
+
+#### `david: mode mentor`
+Teaching mode — every finding includes a full educational explanation before the fix. Why it's wrong, not just that it's wrong.
+```
+Output:
+👩‍🏫 Mentor mode: Every finding includes an educational explanation before the fix.
+   Root cause theory · Common mistake pattern · Why this fix is correct · How to avoid next time.
+```
+
+#### `david: mode triage`
+Triage-only mode — full scan runs, all findings listed by priority, no fixes applied. Map the problem space before deciding what to fix.
+```
+Output:
+🗺️ Triage mode: Full scan, no fixes. Output is a prioritized map only.
+   [Full finding list in table format sorted by priority]
+   Send specific finding IDs or `david: apply all` to begin fixing.
+```
+
+---
+
+### 5i. History & Undo Commands
+
+#### `david: history`
+Print every finding ever raised in this session — including closed, deferred, wontfix, and fixed.
+```
+Output:
+📜 DAVID SESSION HISTORY
+━━━━━━━━━━━━━━━━━━━━━━━
+[ID] [Priority] — [summary] [STATUS: FIXED iter N / DEFERRED: reason / WONTFIX: reason / OPEN]
+...
+━━━━━━━━━━━━━━━━━━━━━━━
+Total: [N] raised · [N] fixed · [N] open · [N] deferred · [N] wontfix
+```
+
+#### `david: undo`
+Revert the last applied fix batch. Restore the code state from before that batch was applied. Only one level of undo is supported.
+```
+Output:
+↩️ Reverted fix batch from iteration [N]. Restored state from before: [IDs in batch].
+   [Restored code block rendered]
+   ⚠️ Note: Only one undo level available. This cannot be undone again.
+```
+
+#### `david: replay [N]`
+Show exactly what was done in iteration N — findings found, fixes applied, verification results.
+```
+Syntax:  david: replay 1
+         david: replay 3
+
+Output:
+📼 REPLAY — iteration [N]/5
+Found    : [N] findings ([breakdown by priority])
+Fixed    : [finding IDs + one-liner each]
+Skipped  : [deferred/wontfix IDs + reason]
+Verified : [5-tier verification result — CLEAN or FAIL per tier]
+```
+
+#### `david: diff session`
+Show a unified git-style diff of ALL changes applied across the entire session.
+```
+Output:
+📂 DAVID SESSION DIFF — all changes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--- a/[filename]
++++ b/[filename]
+@@ -[line],[count] +[line],[count] @@
+ [context line]
+-[removed line]
++[added line]
+...
+[Repeated per modified file]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[N] files changed · [N] insertions · [N] deletions
+```
 
 ---
 
