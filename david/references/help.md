@@ -124,7 +124,7 @@ Semua 40+ scanner. DAVID mengaktifkannya otomatis — kamu tidak perlu memanggil
 | I | GIT | git diff / "changes since" | No |
 | J | MIGRATE | Migration files / DDL | No |
 | K | CICD | Dockerfile / `.github/workflows` yml | No |
-| L | EXPLAIN | "explain this" / new unfamiliar codebase | No |
+| L | EXPLAIN | "explain this" / new unfamiliar codebase | **Partial** (FULL SCAN) |
 | M | TESTGEN | Post-fix OR "generate tests" | No |
 | N | DOCGEN | Post-fix OR "generate docs" | No |
 | O | UIUX | Frontend code / "ux" / "form" / "mobile" (14 sub-scanners) | No |
@@ -143,7 +143,7 @@ Semua 40+ scanner. DAVID mengaktifkannya otomatis — kamu tidak perlu memanggil
 | AB | RATELIMIT | Search inputs / form submits / API calls | No |
 | AC | INPUTSANIT | File uploads / user input handling | No |
 | AD | TECHDEBT | TODO/FIXME / deprecated / "cleanup" | No |
-| AE | PRIVACY | GDPR compliance — Art.17, Art.25 | No |
+| AE | GDPR | GDPR compliance — Art.17, Art.25 | No |
 | AF | RESILIENCE | Fault tolerance / circuit breaker / idempotency | No |
 | AH | PRDESC | Post-fix with git diff present | No |
 | AI | CHANGELOG | "release" / "changelog" mentions | No |

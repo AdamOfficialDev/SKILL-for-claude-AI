@@ -305,7 +305,10 @@ DAVID auto-detects which modes to activate based on code content and user phrasi
 **Key always-on activations:**
 - **B — SECURITY** → every code interaction, unconditionally
 - **HS — HEALTHSCORE** → end of every session, unconditionally
+- **L — EXPLAIN** (partial) → FULL SCAN with no specific complaint — codebase orientation before scanning
 - **ALL scanners** → when code submitted with no specific complaint (FULL SCAN)
+
+> Full always-on rules + Framework Profile (Phase 1.5): `references/scanner-map.md` § 2. Always-On Scanners
 
 ---
 
@@ -404,6 +407,7 @@ When needed files are missing, output the MISSING FILES block and continue with 
 All active scanners run simultaneously; findings batched by priority.
 
 > 📂 Full scanner definitions (40+ scanners, triggers, reference file routing, cross-scanner rules): `references/scanner-map.md` § Scanner Engine
+> 📂 When two scanners flag the same line, one owns the card: `references/scanner-map.md` § 4. Scanner Deduplication Map
 
 ### Fix Priority Order
 
@@ -427,6 +431,7 @@ Apply findings in this exact order:
 Every finding **must** output a Finding Report Card before any fix is applied.
 
 > 📂 All card templates (Base · SEC · UX · ARCH · PERF · DEBT · Batch header): `references/session-protocols.md` § 8. Finding Report Card Templates
+> 📂 When two scanners conflict on the same line, check who owns the card: `references/scanner-map.md` § 4. Scanner Deduplication Map
 
 **Fix Confidence labels — required on every card:**
 

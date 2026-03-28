@@ -395,6 +395,8 @@ Extends base card with mandatory security fields:
 
 **Deduplication:** When both B and AC flag the same input validation issue → AC owns the card, B adds only a cross-reference note. Never double-report the same line.
 
+> 📂 Complete deduplication rules for all 11 scanner conflict pairs: `references/scanner-map.md` § 4. Scanner Deduplication Map
+
 ### UX Finding Card (Scanner O)
 
 Extends base card with UX-specific fields:
