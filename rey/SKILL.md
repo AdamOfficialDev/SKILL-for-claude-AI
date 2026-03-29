@@ -341,12 +341,18 @@ Phase 3 (ongoing): Scale + iterate
 
 | File | Baca Ketika | Priority |
 |------|-------------|----------|
-| `references/project-genesis.md` | Project dari nol / from scratch | 🔴 ALWAYS for new projects |
+| `references/project-genesis.md` | Project web dari nol / from scratch | 🔴 ALWAYS for new web projects |
+| `references/mobile-genesis.md` | Project mobile Expo dari nol | 🔴 ALWAYS for new mobile projects |
 | `references/library-arsenal.md` | Pilih library / recommend tools | 🔴 ALWAYS when recommending |
 | `references/stack-selection.md` | Stack decisions, AI/ML, edge, monorepo | 🟠 Stack decisions |
+| `references/integrations.md` | Stripe, Email, Upload, Search, Analytics | 🟠 Third-party integrations |
 | `references/documentation.md` | PRD, TDD, ADR, RFC, Runbook, Postmortem | 🟠 Doc work |
 | `references/design-system.md` | UI/UX, aesthetics, motion, a11y | 🟠 Design work |
-| `references/performance.md` | Frontend perf, DB, caching, deployment | 🟡 Optimization |
+| `references/component-recipes.md` | 20+ ready-to-use production patterns | 🟠 Building components |
+| `references/ai-integration.md` | LLM, RAG, Agents, Structured extraction | 🟡 AI features |
+| `references/testing-guide.md` | Vitest, Playwright, MSW, Testing Library | 🟡 Testing |
+| `references/security-devops-seo.md` | Security, Docker, CI/CD, SEO, i18n | 🟡 Security & deploy |
+| `references/performance.md` | Frontend perf, DB, caching, streaming | 🟡 Optimization |
 | `references/architecture-patterns.md` | DDD, CQRS, Event Sourcing, Microservices | 🟡 Complex systems |
 | `references/code-intelligence.md` | Advanced TS, design patterns, refactoring | 🟡 Advanced coding |
 | `assets/project-templates.md` | Scaffolding: Next.js, Astro, Mobile, API | 🟡 Quick templates |
