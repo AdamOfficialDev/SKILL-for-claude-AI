@@ -311,6 +311,8 @@ Enhancement Opportunities (hanya item MISSING atau UPGRADE):
   E9 Dark Mode        : [label — NEW / UPGRADE / SKIP]
   E10 Perf Perception : [label — NEW / UPGRADE / SKIP]
 
+Perf Cost Summary       : [✅ NONE / 💡 LOW / ⚠️ MEDIUM / 🔴 HIGH] — [one-line summary]
+                          (detail per-proposal ada di setiap Enhancement Card di bawah)
 UX Maturity Score (before) : [N]/100
 Estimated Score (after)    : [N]/100
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

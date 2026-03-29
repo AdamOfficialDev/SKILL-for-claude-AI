@@ -562,7 +562,7 @@ Breaking change risk: [None / Low — update N callers]
 
 **Load:** `references/enhance/core.md` (E1–E6, always) + `references/enhance/extended.md` (E7–E12)
 
-**Output:** Enhancement proposal with before/after code, UX Maturity Score 0–100 before/after, per-category breakdown
+**Output:** Enhancement proposal with before/after code, UX Maturity Score 0–100 before/after, per-category breakdown. Every proposal card includes mandatory `Perf Cost` field (NONE / LOW / MEDIUM / HIGH) + `Safe to ship` status — format defined in `references/enhance/extended.md` § Enhancement Delivery Format.
 
 ---
 

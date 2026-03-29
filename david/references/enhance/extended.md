@@ -473,7 +473,7 @@ function ProgressBar({ value, max, label, showLabel = true, variant = 'default' 
 
 ## Enhancement Delivery Format
 
-Setiap finding EN wajib menggunakan format ini. **Field `Evidence` adalah mandatory** — finding tanpa Evidence dianggap tidak valid dan tidak boleh dioutput.
+Setiap finding EN wajib menggunakan format ini. **Field `Evidence` dan `Perf Cost` adalah mandatory** — finding tanpa keduanya dianggap tidak valid dan tidak boleh dioutput.
 
 ```
 🚀 ENHANCEMENT OPPORTUNITY [E1-001]
@@ -500,7 +500,11 @@ Enhanced UX:
 
 Fix Confidence  : ✅ SAFE TO APPLY — visual only, no logic change
 Effort          : Low (15 min)
-UX Impact       : High — first impression of all list data
+UX Impact       : 🔥 High — first impression of all list data
+Perf Cost       : ⚠️ MEDIUM — skeleton WAJIB punya dimensi fixed (min-h / fixed width)
+                  tanpa ini CLS akan naik. Gunakan min-h-[Npx] sesuai konten aktual.
+                  Animasi shimmer: gunakan background-position, BUKAN width/height.
+Safe to ship    : ✅ Ya — dengan syarat dimensi fixed di atas terpenuhi
 
 [DAVID provides complete implementation below]
 ```
@@ -514,6 +518,67 @@ Evidence     : Line 45-67: UserListSkeleton component FOUND — animate-pulse di
 Current Level: Functional (Level 2 — skeleton dengan pulse) — VERIFIED dari line 45-67
 Target Level : Good (Level 3 — skeleton + shimmer animation)
 ```
+
+---
+
+### Perf Cost Rating Guide
+
+Field `Perf Cost` wajib ada di setiap proposal. Gunakan tabel ini sebagai acuan:
+
+| Rating | Arti | Contoh |
+|--------|------|--------|
+| ✅ NONE | Tidak ada perf impact | Mengubah warna button, menambah aria-label |
+| 💡 LOW | Impact minimal, tidak perlu mitigasi | Menambah `transition-colors` (GPU-composited) |
+| ⚠️ MEDIUM | Ada risk spesifik — mitigasi wajib disebutkan | Skeleton tanpa dimensi fixed → CLS risk |
+| 🔴 HIGH | Bisa merusak performa jika tidak hati-hati — perlu review sebelum ship | Animasi berat tanpa `will-change`, list tanpa virtualization |
+
+**Aturan penentuan Perf Cost:**
+
+```
+Proposal melibatkan animasi?
+  └── animate transform/opacity saja          → LOW
+  └── animate width/height/top/left/margin    → HIGH (layout trigger — CLS/INP risk)
+  └── animate background-position (shimmer)  → LOW (GPU composited)
+
+Proposal melibatkan loading state baru?
+  └── ada min-h / fixed width di skeleton     → LOW
+  └── tidak ada dimensi fixed                 → MEDIUM (CLS risk)
+
+Proposal menambah komponen/library baru?
+  └── library < 5KB gzipped                   → LOW
+  └── library 5-20KB                          → MEDIUM (sebutkan bundle cost)
+  └── library > 20KB                          → HIGH (wajib cek tree-shaking + code split)
+
+Proposal melibatkan list/tabel besar?
+  └── item count < 50 di kode aktual           → LOW
+  └── item count 50–200                        → MEDIUM (monitor, suggest virtualization)
+  └── item count > 200 atau dinamis dari API   → HIGH (virtualization wajib)
+
+Semua lainnya                                  → NONE
+```
+
+---
+
+### Perf Cost Reference per Sub-Enhancer
+
+Gunakan sebagai quick lookup saat mengisi field `Perf Cost`:
+
+| Sub-Enhancer | Risk Utama | Default Perf Cost | Mitigasi Wajib |
+|---|---|---|---|
+| E1 — Loading Skeleton | CLS jika no fixed dimensions | ⚠️ MEDIUM | `min-h-[Npx]` wajib, animasi pakai `background-position` |
+| E2 — Empty State | Hampir tidak ada | ✅ NONE | — |
+| E3 — Microinteraction | Layout trigger jika animate non-transform | 💡 LOW → 🔴 HIGH | Cek: hanya `transform` + `opacity`? Jika tidak → HIGH |
+| E4 — Form UX | Validasi real-time bisa trigger re-render tiap keystroke | ⚠️ MEDIUM | Debounce min 300ms untuk async validation |
+| E5 — Navigation | Page transition animasi bisa block navigation | 💡 LOW | Gunakan `View Transitions API` atau CSS-only |
+| E6 — Visual Hierarchy | Tidak ada | ✅ NONE | — |
+| E7 — Feedback/Toast | Toast library bisa bloat bundle | 💡 LOW | Audit ukuran library: `sonner` (3KB) vs `react-hot-toast` (5KB) |
+| E8 — Mobile/Touch | Bottom sheet animasi bisa jank di low-end | ⚠️ MEDIUM | Gunakan `transform: translateY` + `will-change: transform` |
+| E9 — Dark Mode Polish | Tidak ada perf impact | ✅ NONE | — |
+| E10 — Perf Perception | Library besar jika tidak careful | ⚠️ MEDIUM | Virtual scroller: `@tanstack/react-virtual` (13KB) — perlu code split |
+| E11 — A11Y Delight | Focus ring CSS: tidak ada impact | ✅ NONE | — |
+| E12 — Data Display | Chart library bisa sangat berat | ⚠️ MEDIUM → 🔴 HIGH | Chart.js (60KB) vs Recharts (98KB) — code split wajib |
+
+---
 
 **Enhancement impact rating:**
 
