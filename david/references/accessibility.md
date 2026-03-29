@@ -4,6 +4,16 @@ Full checklist for Scanner F. Load when auditing HTML, JSX, Vue, Svelte, or Angu
 
 ---
 
+## Table of Contents
+1. [Quick Severity Guide](#quick-severity-guide)
+2. [Level A — Critical](#level-a--critical-always-fix)
+3. [Level AA — Important](#level-aa--important)
+4. [React / JSX Specific](#react--jsx-specific)
+5. [WCAG 2.2 New Criteria (2023)](#wcag-22-new-criteria-2023)
+
+---
+
+
 ## Quick Severity Guide
 
 | WCAG Level | DAVID Severity | Action |

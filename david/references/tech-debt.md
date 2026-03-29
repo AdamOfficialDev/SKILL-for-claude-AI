@@ -4,6 +4,16 @@ Patterns for dead code, error coverage, cyclomatic complexity, feature flags, an
 
 ---
 
+## Table of Contents
+1. [Dead Code Detection (Scanner Q)](#dead-code-detection-scanner-q)
+2. [Error Coverage Map (Scanner R)](#error-coverage-map-scanner-r)
+3. [Cyclomatic Complexity (Scanner S)](#cyclomatic-complexity-scanner-s)
+4. [Feature Flag Inventory (Scanner Z)](#feature-flag-inventory-scanner-z)
+5. [Tech Debt Heatmap Scoring](#tech-debt-heatmap-scoring)
+
+---
+
+
 ## Dead Code Detection (Scanner Q)
 
 ### Zombie Export Detection

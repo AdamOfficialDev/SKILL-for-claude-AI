@@ -4,6 +4,19 @@ Full SEO pattern library. Load for Next.js, Nuxt, Remix, SvelteKit, or any SSR a
 
 ---
 
+## Table of Contents
+1. [Critical SEO Checklist (P1)](#critical-seo-checklist-p1--fix-immediately)
+2. [Open Graph Tags](#open-graph-tags)
+3. [Canonical URL](#canonical-url)
+4. [Heading Hierarchy](#heading-hierarchy)
+5. [The noindex Trap](#the-noindex-trap)
+6. [Structured Data (Schema.org)](#structured-data-schemaorg)
+7. [Image SEO](#image-seo)
+8. [Technical SEO Checklist](#technical-seo-checklist)
+
+---
+
+
 ## Critical SEO Checklist (P1 — Fix Immediately)
 
 ### Title Tag

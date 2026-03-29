@@ -4,6 +4,19 @@ Full TypeScript type safety pattern library. Load for .ts / .tsx files.
 
 ---
 
+## Table of Contents
+1. [The `any` Epidemic](#the-any-epidemic)
+2. [Non-Null Assertion Overuse](#non-null-assertion-overuse)
+3. [Missing Return Types on Exported Functions](#missing-return-types-on-exported-functions)
+4. [Unsafe JSON.parse and API Responses](#unsafe-jsonparse-and-api-responses)
+5. [Generic Opportunities Missed](#generic-opportunities-missed)
+6. [Discriminated Union Opportunities](#discriminated-union-opportunities)
+7. [Type Guard Patterns](#type-guard-patterns)
+8. [Strict TypeScript Config Checklist](#strict-typescript-config-checklist)
+
+---
+
+
 ## The `any` Epidemic
 
 ### Detection Patterns

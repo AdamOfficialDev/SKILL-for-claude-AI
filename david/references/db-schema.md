@@ -4,6 +4,17 @@ Full patterns for database schema design quality. Load for SQL schema files and 
 
 ---
 
+## Table of Contents
+1. [Index Strategy Guide](#index-strategy-guide)
+2. [Constraint Design Patterns](#constraint-design-patterns)
+3. [Audit Fields Pattern](#audit-fields-pattern)
+4. [Schema Anti-Patterns Catalog](#schema-anti-patterns-catalog)
+5. [Query Pattern → Index Mapping](#query-pattern--index-mapping)
+6. [PostgreSQL-Specific Best Practices](#postgresql-specific-best-practices)
+
+---
+
+
 ## Index Strategy Guide
 
 ### When to Add an Index

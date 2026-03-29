@@ -4,6 +4,14 @@ Full pattern library for Scanner K. Load when auditing Docker, GitHub Actions, o
 
 ---
 
+## Table of Contents
+1. [Docker Best Practices](#docker-best-practices)
+2. [GitHub Actions Best Practices](#github-actions-best-practices)
+3. [Migration Safety Patterns](#migration-safety-patterns)
+
+---
+
+
 ## Docker Best Practices
 
 ### Security

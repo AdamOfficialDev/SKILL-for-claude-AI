@@ -4,6 +4,15 @@ Anti-patterns and best practices for Redux, Zustand, Context, and Pinia. Load wh
 
 ---
 
+## Table of Contents
+1. [React Context Anti-Patterns](#react-context-anti-patterns)
+2. [Redux Anti-Patterns](#redux-anti-patterns)
+3. [Zustand Anti-Patterns](#zustand-anti-patterns)
+4. [When to Use What](#when-to-use-what)
+
+---
+
+
 ## React Context Anti-Patterns
 
 ### The Re-render Problem

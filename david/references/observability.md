@@ -4,6 +4,18 @@ Full patterns for logging, metrics, tracing, and monitoring. Load for production
 
 ---
 
+## Table of Contents
+1. [Structured Logging](#structured-logging)
+2. [PII Detection Patterns](#pii-detection-patterns)
+3. [Request/Response Logging Middleware](#requestresponse-logging-middleware)
+4. [Health Check Endpoint](#health-check-endpoint)
+5. [Distributed Tracing](#distributed-tracing)
+6. [Error Tracking Integration](#error-tracking-integration)
+7. [Missing Observability Checklist](#missing-observability-checklist)
+
+---
+
+
 ## Structured Logging
 
 ### Log Levels — When to Use Each

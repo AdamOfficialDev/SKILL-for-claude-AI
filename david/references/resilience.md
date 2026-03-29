@@ -4,6 +4,18 @@ Full patterns for building systems that survive failures gracefully. Load for pr
 
 ---
 
+## Table of Contents
+1. [Timeout Configuration Guide](#timeout-configuration-guide)
+2. [Exponential Backoff With Jitter](#exponential-backoff-with-jitter)
+3. [Circuit Breaker States](#circuit-breaker-states)
+4. [Graceful Degradation Patterns](#graceful-degradation-patterns)
+5. [Idempotency Patterns](#idempotency-patterns)
+6. [Health Check Patterns](#health-check-patterns)
+7. [Bulkhead Pattern](#bulkhead-pattern)
+
+---
+
+
 ## Timeout Configuration Guide
 
 ### Timeout Values by Operation Type

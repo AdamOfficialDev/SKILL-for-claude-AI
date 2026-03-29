@@ -29,7 +29,7 @@ Detect user language first. Then output the language-appropriate one-liner, foll
   </div>
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px">
     <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 8px;text-align:center"><div style="font-size:19px;font-weight:500">40+</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:1px">scanners</div></div>
-    <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 8px;text-align:center"><div style="font-size:19px;font-weight:500">39</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:1px">ref files</div></div>
+    <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 8px;text-align:center"><div style="font-size:19px;font-weight:500">43</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:1px">ref files</div></div>
     <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 8px;text-align:center"><div style="font-size:19px;font-weight:500">5x</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:1px">fix loops</div></div>
     <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 8px;text-align:center"><div style="font-size:19px;font-weight:500">0</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:1px">silent del.</div></div>
   </div>

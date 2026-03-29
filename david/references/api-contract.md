@@ -4,6 +4,17 @@ Patterns for REST API consistency, response shapes, and contract validation.
 
 ---
 
+## Table of Contents
+1. [Response Envelope Consistency](#response-envelope-consistency)
+2. [HTTP Method Semantic Violations](#http-method-semantic-violations)
+3. [Status Code Correctness](#status-code-correctness)
+4. [Pagination Response Shape](#pagination-response-shape)
+5. [Validation Error Shape](#validation-error-shape)
+6. [Rate Limiting Advisor (Scanner AB)](#rate-limiting-advisor-scanner-ab)
+
+---
+
+
 ## Response Envelope Consistency
 
 ```javascript

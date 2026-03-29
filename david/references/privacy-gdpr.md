@@ -4,6 +4,19 @@ Full pattern library for privacy compliance. Load for any backend handling user 
 
 ---
 
+## Table of Contents
+1. [GDPR Articles Quick Reference](#gdpr-articles-quick-reference)
+2. [PII Field Recognition](#pii-field-recognition)
+3. [Right to Erasure Implementation Patterns](#right-to-erasure-implementation-patterns)
+4. [Data Retention Enforcement](#data-retention-enforcement)
+5. [Consent Management](#consent-management)
+6. [Encryption at Rest](#encryption-at-rest)
+7. [Data Portability (GDPR Art. 20)](#data-portability-gdpr-art-20)
+8. [Privacy by Design Checklist (Art. 25)](#privacy-by-design-checklist-art-25)
+
+---
+
+
 ## GDPR Articles Quick Reference
 
 | Article | Topic | DAVID Checks |

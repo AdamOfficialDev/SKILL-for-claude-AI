@@ -4,6 +4,18 @@ Deep patterns for auditing existing tests. This is NOT about generating new test
 
 ---
 
+## Table of Contents
+1. [The Danger of Bad Tests](#the-danger-of-bad-tests)
+2. [Anti-Assertion Taxonomy](#anti-assertion-taxonomy)
+3. [Flaky Test Patterns](#flaky-test-patterns)
+4. [Test Isolation Failures](#test-isolation-failures)
+5. [Coverage Quality Analysis](#coverage-quality-analysis)
+6. [Python Test Quality Patterns](#python-test-quality-patterns)
+7. [Go Test Quality Patterns](#go-test-quality-patterns)
+
+---
+
+
 ## The Danger of Bad Tests
 
 A test suite with 90% coverage but bad assertions is worse than 0% coverage. It:
